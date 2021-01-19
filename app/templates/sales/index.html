@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block extra_css %}
+    <style>
+        span {
+            cursor: pointer;
+        }
+
+        .minus, .plus {
+            width: 21px;
+            height: 3px;
+            background: #f2f2f2;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            display: inline-table;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .quantity-input {
+            height: 27px;
+            width: 50px;
+            text-align: center;
+            font-size: 15px;
+            border: 1px solid #ddd;
+            border-radius: 2px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .dataTables_filter {
+           float: left !important;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    {% include 'sales/items.html' %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    {% include 'sales/cart-items.html' %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        $(document).ready(function() {
+            var itemTable = $('#data-table').DataTable({
+                responsive: true,
+                paging: false,
+                pageLength: 20,
+                searching: true,
+                ordering: false,
+                autoWidth: false,
+                dom: '<"pull-left"f><"pull-right"l>tip',
+                initComplete: function () {
+                    var searchField = $('.dataTables_filter input[type="search"]');
+                    searchField.css({ 'width': '500px', 'display': 'inline-block' });
+                    searchField.addClass('mr-auto')
+                }
+            });
+
+            var cartTable = $('#cart-table').DataTable({
+                responsive: true,
+                paging: false,
+                searching: false,
+                ordering: false,
+                autoWidth: false,
+                info: false,
+                columnDefs: [{
+                    targets: [2],
+                    render(v){
+                      return Number(v).toFixed(3)
+                    }
+                }]
+            });
+
+            $('.minus').click(function () {
+				var $input = $(this).parent().find('input');
+				var count = parseInt($input.val()) - 1;
+				count = count < 1 ? 1 : count;
+				$input.val(count);
+				$input.change();
+				return false;
+			});
+
+			$('.plus').click(function () {
+				var $input = $(this).parent().find('input');
+				$input.val(parseInt($input.val()) + 1);
+				$input.change();
+				return false;
+			});
+
+			$('.addItem').click(function () {
+                var id = $(this).attr('data-id');
+                var name = $(this).attr('data-name');
+                var price = $(this).attr('data-price');
+                var quantity = $('input[name='+id.toString()+'-quantity]').val();
+                cartTable.row.add([name, quantity, parseFloat(price) * parseFloat(quantity)]).draw( false );
+            })
+        } );
+
+        $('.quantity-input').on('keyup keypress blur change', function(e) {
+            var limit = $(this).attr('max');
+            if($(this).val() > limit) {
+                $(this).val(limit);
+            }
+        });
+    </script>
+{% endblock %}
