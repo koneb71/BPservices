@@ -5,14 +5,13 @@
             <th>Category</th>
             <th>Stock</th>
             <th>Price</th>
-            <th>Quantity</th>
             <th>Action</th>
         </tr>
     </thead>
     <tbody>
         {% for item in items %}
         <tr>
-            <td class="font-weight-bolder">{{ item.name }}</td>
+            <td class="font-weight-bolder" id="item-{{ item.id }}">{{ item.name }}</td>
             <td>{{ item.category.name }}</td>
             <td>
                 {% if item.stock %}
@@ -24,16 +23,7 @@
             <td>{{ item.selling_price }}</td>
             <td>
                 {% if item.stock %}
-                <div class="number">
-                    <span class="minus">-</span>
-                    <input class="quantity-input" type="number" name="{{ item.id }}-quantity" value="1" max="{{ item.stock }}" />
-                    <span class="plus">+</span>
-                </div>
-                {% endif %}
-            </td>
-            <td>
-                {% if item.stock %}
-                <button class="btn btn-sm btn-primary addItem" data-id="{{ item.id }}" data-name="{{ item.name }}" data-price="{{ item.selling_price }}">Add</button>
+                <button class="btn btn-sm btn-primary addItem" data-id="{{ item.id }}" data-stock="{{ item.stock }}" data-name="{{ item.name }}" data-price="{{ item.selling_price }}">Add</button>
                 {% endif %}
             </td>
         </tr>

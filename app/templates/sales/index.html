@@ -21,7 +21,7 @@
             text-align: center;
         }
 
-        .quantity-input {
+        .sales-input {
             height: 27px;
             width: 50px;
             text-align: center;
@@ -60,7 +60,7 @@
 
 {% block extra_js %}
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             var itemTable = $('#data-table').DataTable({
                 responsive: true,
                 paging: false,
@@ -71,7 +71,7 @@
                 dom: '<"pull-left"f><"pull-right"l>tip',
                 initComplete: function () {
                     var searchField = $('.dataTables_filter input[type="search"]');
-                    searchField.css({ 'width': '500px', 'display': 'inline-block' });
+                    searchField.css({'width': '500px', 'display': 'inline-block'});
                     searchField.addClass('mr-auto')
                 }
             });
@@ -83,44 +83,96 @@
                 ordering: false,
                 autoWidth: false,
                 info: false,
-                columnDefs: [{
-                    targets: [2],
-                    render(v){
-                      return Number(v).toFixed(3)
-                    }
-                }]
+                columnDefs: [
+                    {
+                        targets: [ 1 ],
+                        render  : function(data, type, row){
+                            return '<div class="number">' +
+                                        '<span class="minus">-</span>' +
+                                            '<input class="sales-input" type="number" name="' + data + '-quantity" value="1" max="' + row[6] + '"/>' +
+                                        '<span class="plus">+</span>' +
+                                    '</div>';
+                        }
+                    },
+                    {
+                        targets: [ 2 ],
+                        render  : function(data, type, row){
+                            return '<input class="sales-input" type="number" name="' + data + '-discount" value="0" min="0"/>';
+                        }
+                    },
+                    {
+                        targets: [3],
+                        render(v) {
+                            return Number(v).toFixed(3)
+                        },
+                    },
+                    {
+                        "targets": [ 5 ],
+                        "visible": false,
+                        "searchable": false
+                    },
+                    {
+                        "targets": [ 6 ],
+                        "visible": false,
+                        "searchable": false
+                    },
+                ]
             });
 
-            $('.minus').click(function () {
-				var $input = $(this).parent().find('input');
-				var count = parseInt($input.val()) - 1;
-				count = count < 1 ? 1 : count;
-				$input.val(count);
-				$input.change();
-				return false;
-			});
+            $(document).on('click', '.minus', function (e) {
+                var $input = $(this).parent().find('input');
+                var count = parseInt($input.val()) - 1;
+                count = count < 1 ? 1 : count;
+                $input.val(count);
+                $input.change();
+                return false;
+            });
 
-			$('.plus').click(function () {
-				var $input = $(this).parent().find('input');
-				$input.val(parseInt($input.val()) + 1);
-				$input.change();
-				return false;
-			});
+             $(document).on('click', '.plus', function (e) {
+                var $input = $(this).parent().find('input');
+                $input.val(parseInt($input.val()) + 1);
+                $input.change();
+                return false;
+            });
 
-			$('.addItem').click(function () {
+            $(document).on('keyup keypress blur change', '.sales-input', function (e) {
+                var limit = $(this).attr('max');
+
+                if(limit) {
+                    if ($(this).val() > limit) {
+                        $(this).val(limit);
+                    }
+                }
+
+                if ($(this).val() < 0) {
+                    $(this).val(0);
+                }
+            });
+
+            $('.addItem').click(function () {
                 var id = $(this).attr('data-id');
                 var name = $(this).attr('data-name');
+                var stock = $(this).attr('data-stock');
                 var price = $(this).attr('data-price');
-                var quantity = $('input[name='+id.toString()+'-quantity]').val();
-                cartTable.row.add([name, quantity, parseFloat(price) * parseFloat(quantity)]).draw( false );
-            })
-        } );
+                cartTable.row.add([
+                    name,
+                    id,
+                    id,
+                    parseFloat(price),
+                    '<button class="btn btn-sm btn-danger removeItem">Remove</button>',
+                    stock,
+                    id,
+                ]).draw(false);
 
-        $('.quantity-input').on('keyup keypress blur change', function(e) {
-            var limit = $(this).attr('max');
-            if($(this).val() > limit) {
-                $(this).val(limit);
-            }
+                $('#item-'+id).parents('tr').addClass('d-none')
+            });
+
+            $(document).on('click', '.removeItem', function (e) {
+                var parentTr = $(this).parents('tr');
+                var id = cartTable.row(parentTr).row(':last-child').data()[6];
+                cartTable.row(parentTr).remove().draw(false);
+                $('#item-'+id.toString()).parents('tr').removeClass('d-none');
+            });
         });
     </script>
 {% endblock %}
