@@ -40,14 +40,14 @@
 
 {% block content %}
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-7">
             <div class="card">
                 <div class="card-body">
                     {% include 'sales/items.html' %}
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-5">
             <div class="card">
                 <div class="card-body">
                     {% include 'sales/cart-items.html' %}
@@ -85,34 +85,34 @@
                 info: false,
                 columnDefs: [
                     {
-                        targets: [ 1 ],
+                        targets: [ 2 ],
                         render  : function(data, type, row){
                             return '<div class="number">' +
                                         '<span class="minus">-</span>' +
-                                            '<input class="sales-input" type="number" name="' + data + '-quantity" value="1" max="' + row[6] + '"/>' +
+                                            '<input class="sales-input" type="number"  name="' + data + '-quantity" value="1" max="' + row[6] + '"/>' +
                                         '<span class="plus">+</span>' +
                                     '</div>';
                         }
                     },
                     {
-                        targets: [ 2 ],
+                        targets: [ 3 ],
                         render  : function(data, type, row){
                             return '<input class="sales-input" type="number" name="' + data + '-discount" value="0" min="0"/>';
                         }
                     },
                     {
-                        targets: [3],
-                        render(v) {
-                            return Number(v).toFixed(3)
-                        },
+                        targets: [4],
+                        render  : function(data, type, row){
+                             return '<span id="'+ row[7] +'_total">' + Number(data).toFixed(3) + '</span>';
+                        }
                     },
                     {
-                        "targets": [ 5 ],
+                        "targets": [ 6 ],
                         "visible": false,
                         "searchable": false
                     },
                     {
-                        "targets": [ 6 ],
+                        "targets": [ 7 ],
                         "visible": false,
                         "searchable": false
                     },
@@ -147,6 +147,13 @@
                 if ($(this).val() < 0) {
                     $(this).val(0);
                 }
+
+                if ($(this).val() < 0) {
+                    $(this).val(0);
+                }
+
+                var parentTr = $(this).parents('tr');
+                var id = cartTable.row(parentTr).row(':last-child').data()[7];
             });
 
             $('.addItem').click(function () {
@@ -156,6 +163,7 @@
                 var price = $(this).attr('data-price');
                 cartTable.row.add([
                     name,
+                    price,
                     id,
                     id,
                     parseFloat(price),
@@ -169,7 +177,7 @@
 
             $(document).on('click', '.removeItem', function (e) {
                 var parentTr = $(this).parents('tr');
-                var id = cartTable.row(parentTr).row(':last-child').data()[6];
+                var id = cartTable.row(parentTr).row(':last-child').data()[7];
                 cartTable.row(parentTr).remove().draw(false);
                 $('#item-'+id.toString()).parents('tr').removeClass('d-none');
             });
